@@ -1,0 +1,33 @@
+### GET All Categories
+GET http://localhost:3000/api/categories
+Accept: application/json
+X-API-Key: KEY
+
+
+
+### Create Category
+POST http://localhost:3000/api/categories
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+### Get Category by ID
+GET http://localhost:3000/api/categories/100
+Accept: application/json
+
+
+### Update Category
+PUT http://localhost:3000/api/categories/4
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "Category 4 Updated"
+}
+
+### Delete Category
+DELETE http://localhost:3000/api/categories/2
+Accept: application/json
+Content-Type: application/json
