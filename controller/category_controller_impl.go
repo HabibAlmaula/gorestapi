@@ -5,23 +5,22 @@ import (
 	"learning/restapi/helper"
 	"learning/restapi/model/base"
 	"learning/restapi/model/web/request"
-	"learning/restapi/service"
+	"learning/restapi/service/category"
 	"net/http"
 	"strconv"
 )
 
 type CategoryControllerImpl struct {
-	Service service.CategoryService
+	Service category.CategoryService
 }
 
-func NewCategoryController(categoryService service.CategoryService) CategoryController {
+func NewCategoryController(categoryService category.CategoryService) CategoryController {
 	return &CategoryControllerImpl{
 		Service: categoryService,
 	}
 }
 
 func (c *CategoryControllerImpl) Create(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-
 	req := request.CategoryCreateRequest{}
 	helper.ReadFromRequestBody(r, &req)
 

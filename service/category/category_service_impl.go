@@ -1,4 +1,4 @@
-package service
+package category
 
 import (
 	"context"
@@ -9,16 +9,16 @@ import (
 	"learning/restapi/model/domain"
 	"learning/restapi/model/web/request"
 	"learning/restapi/model/web/response"
-	"learning/restapi/repository"
+	"learning/restapi/repository/category"
 )
 
 type CategoryServiceImpl struct {
-	CategoryRepository repository.CategoryRepository
+	CategoryRepository category.CategoryRepository
 	DB                 *sql.DB
 	Validate           *validator.Validate
 }
 
-func NewCategoryService(categoryRepository repository.CategoryRepository, db *sql.DB, validate *validator.Validate) CategoryService {
+func NewCategoryService(categoryRepository category.CategoryRepository, db *sql.DB, validate *validator.Validate) CategoryService {
 	return &CategoryServiceImpl{
 		CategoryRepository: categoryRepository,
 		DB:                 db,

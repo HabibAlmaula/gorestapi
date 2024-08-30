@@ -12,11 +12,32 @@ func ErrorHandler(writer http.ResponseWriter, request *http.Request, err interfa
 		return
 	}
 
+	if dataExistError(writer, request, err) {
+		return
+	}
+
 	if validationErrors(writer, request, err) {
 		return
 	}
 
 	internalServerError(writer, request, err)
+}
+
+func dataExistError(writer http.ResponseWriter, request *http.Request, err interface{}) bool {
+	dataError, ok := err.(DataExistError)
+	if !ok {
+		return false
+	} else {
+		writer.WriteHeader(http.StatusConflict)
+		response := base.BaseResponse{
+			Code:    http.StatusConflict,
+			Succes:  false,
+			Message: dataError.Error,
+		}
+		helper.WriteToResponseBody(writer, response)
+
+		return true
+	}
 }
 
 func validationErrors(writer http.ResponseWriter, request *http.Request, err interface{}) bool {

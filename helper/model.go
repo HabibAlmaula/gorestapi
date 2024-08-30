@@ -11,3 +11,11 @@ func ToCategoryResponse(category domain.Category) response.CategoryResponse {
 		Name: category.Name,
 	}
 }
+
+func ToUserResponse(user domain.User) response.UserResponse {
+	return response.UserResponse{
+		Id:       user.Id,
+		Fullname: user.FullName,
+		Email:    user.Email,
+	}
+}
