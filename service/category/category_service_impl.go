@@ -1,24 +1,25 @@
-package service
+package category
 
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/go-playground/validator/v10"
 	"learning/restapi/exception"
 	"learning/restapi/helper"
 	"learning/restapi/model/domain"
 	"learning/restapi/model/web/request"
 	"learning/restapi/model/web/response"
-	"learning/restapi/repository"
+	"learning/restapi/repository/category"
 )
 
 type CategoryServiceImpl struct {
-	CategoryRepository repository.CategoryRepository
+	CategoryRepository category.CategoryRepository
 	DB                 *sql.DB
 	Validate           *validator.Validate
 }
 
-func NewCategoryService(categoryRepository repository.CategoryRepository, db *sql.DB, validate *validator.Validate) CategoryService {
+func NewCategoryService(categoryRepository category.CategoryRepository, db *sql.DB, validate *validator.Validate) CategoryService {
 	return &CategoryServiceImpl{
 		CategoryRepository: categoryRepository,
 		DB:                 db,
@@ -103,6 +104,7 @@ func (c *CategoryServiceImpl) GetById(ctx context.Context, id int) response.Cate
 
 func (c *CategoryServiceImpl) GetAll(ctx context.Context) []response.CategoryResponse {
 	tx, err := c.DB.Begin()
+	fmt.Println("Error_Service_1: ", err)
 	helper.PanicIfError(err)
 
 	defer helper.CommitOrRollback(tx)

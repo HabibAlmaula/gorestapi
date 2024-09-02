@@ -1,0 +1,33 @@
+app:
+  env: local
+  prefixendpoint:
+  address: 127.0.0.1
+  port: 3001
+  timezone: Asia/Jakarta
+  apikey: 302fd250-bc15-4754-bb2b-65c490c75da7
+  csrftokenexpireduration: 120 #In Seconds
+
+jwt:
+  secretaccess: secretaccess
+  secretrefresh: secretrefresh
+  ttlaccess: 60
+  ttlrefresh: 420
+
+aws:
+  accesskey: blablabla
+  secretkey: blablabla
+
+db:
+  driver: mysql
+  host: 127.0.0.1
+  port: 3306
+  name:
+  user:
+  password:
+  locale: Asia/Jakarta
+  maxopenconns: 20
+
+redis:
+  addr: 127.0.0.1:6379
+  password:
+  db: 0
