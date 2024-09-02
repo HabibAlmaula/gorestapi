@@ -3,7 +3,6 @@ package category
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"github.com/go-playground/validator/v10"
 	"learning/restapi/exception"
 	"learning/restapi/helper"
@@ -28,7 +27,7 @@ func NewCategoryService(categoryRepository category.CategoryRepository, db *sql.
 
 }
 
-func (c *CategoryServiceImpl) Create(ctx context.Context, request request.CategoryCreateRequest) response.CategoryResponse {
+func (c *CategoryServiceImpl) Create(ctx context.Context, request request.CategoryCreateRequest, userId string) response.CategoryResponse {
 	// Validate request
 	err := c.Validate.Struct(request)
 	helper.PanicIfError(err)
@@ -42,7 +41,11 @@ func (c *CategoryServiceImpl) Create(ctx context.Context, request request.Catego
 		Name: request.Name,
 	}
 
-	category = c.CategoryRepository.Create(ctx, tx, category)
+	user := domain.User{
+		Id: userId,
+	}
+
+	category = c.CategoryRepository.Create(ctx, tx, category, user)
 
 	return helper.ToCategoryResponse(category)
 
@@ -104,7 +107,6 @@ func (c *CategoryServiceImpl) GetById(ctx context.Context, id int) response.Cate
 
 func (c *CategoryServiceImpl) GetAll(ctx context.Context) []response.CategoryResponse {
 	tx, err := c.DB.Begin()
-	fmt.Println("Error_Service_1: ", err)
 	helper.PanicIfError(err)
 
 	defer helper.CommitOrRollback(tx)
@@ -117,4 +119,34 @@ func (c *CategoryServiceImpl) GetAll(ctx context.Context) []response.CategoryRes
 	}
 
 	return categoryResponses
+}
+
+func (c *CategoryServiceImpl) GetAllByUserId(ctx context.Context, userId string) []response.CategoryResponse {
+	tx, err := c.DB.Begin()
+	helper.PanicIfError(err)
+
+	defer helper.CommitOrRollback(tx)
+
+	categories := c.CategoryRepository.GetAllByUserId(ctx, tx, userId)
+
+	var categoryResponses []response.CategoryResponse
+	for _, category := range categories {
+		categoryResponses = append(categoryResponses, helper.ToCategoryResponse(category))
+	}
+
+	return categoryResponses
+}
+
+func (c *CategoryServiceImpl) GetByIdAndUserId(ctx context.Context, id int, userId string) response.CategoryResponse {
+	tx, err := c.DB.Begin()
+	helper.PanicIfError(err)
+
+	defer helper.CommitOrRollback(tx)
+
+	// Get category by id and user id
+	category, err := c.CategoryRepository.GetByIdAndUserId(ctx, tx, id, userId)
+	if err != nil {
+		panic(exception.NewNotFoundError(err.Error()))
+	}
+	return helper.ToCategoryResponse(category)
 }

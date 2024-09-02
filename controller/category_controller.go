@@ -11,4 +11,6 @@ type CategoryController interface {
 	Delete(w http.ResponseWriter, r *http.Request, params httprouter.Params)
 	GetById(w http.ResponseWriter, r *http.Request, params httprouter.Params)
 	GetAll(w http.ResponseWriter, r *http.Request, params httprouter.Params)
+	GetAllByUserId(w http.ResponseWriter, r *http.Request, params httprouter.Params)
+	GetByIdAndUserId(w http.ResponseWriter, r *http.Request, params httprouter.Params)
 }

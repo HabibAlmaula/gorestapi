@@ -138,6 +138,8 @@ func (middleware *AuthMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// If everything is fine, call the next handler
+	// If everything is fine, call the next handler, and add the user ID to the request Header
+	r.Header.Add("X-User-ID", token.Claims.(*JwtClaims).ID)
+
 	middleware.Handler(w, r, ps)
 }
