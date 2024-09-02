@@ -29,9 +29,10 @@ authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjU0Nzg0O
 ### Create Category
 POST http://localhost:3000/api/categories
 Content-Type: application/json
+authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjU0Nzg0ODcsImlhdCI6MTcyNTI2MjQ4Nywic3ViIjoiMGY5ZDdjZmUtNzIyZC00MDgyLWJlZWYtOWU3MzE1Y2ExNDc3In0.pa91raqtxj3kGF6aIhhMUwnhSOp6gvWOQmG07cgZUII
 
 {
-  "name": ""
+  "name": "Category 1"
 }
 
 ### Get Category by ID
@@ -40,12 +41,14 @@ Accept: application/json
 
 
 ### Update Category
-PUT http://localhost:3000/api/categories/4
+PUT http://localhost:3000/api/categories/5
 Accept: application/json
 Content-Type: application/json
+authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjU0Nzg0ODcsImlhdCI6MTcyNTI2MjQ4Nywic3ViIjoiMGY5ZDdjZmUtNzIyZC00MDgyLWJlZWYtOWU3MzE1Y2ExNDc3In0.pa91raqtxj3kGF6aIhhMUwnhSOp6gvWOQmG07cgZUII
+
 
 {
-  "name": "Category 4 Updated"
+  "name": "Category 1 Habib Updated"
 }
 
 ### Delete Category

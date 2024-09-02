@@ -24,7 +24,9 @@ func (c *CategoryControllerImpl) Create(w http.ResponseWriter, r *http.Request, 
 	req := request.CategoryCreateRequest{}
 	helper.ReadFromRequestBody(r, &req)
 
-	res := c.Service.Create(r.Context(), req)
+	userId := r.Header.Get("X-User-ID")
+
+	res := c.Service.Create(r.Context(), req, userId)
 	response := base.BaseResponse{
 		Code:    201,
 		Message: "Success Create Category",
@@ -67,18 +69,6 @@ func (c *CategoryControllerImpl) Delete(w http.ResponseWriter, r *http.Request, 
 	}
 
 	helper.WriteToResponseBody(w, response)
-	//categoryId, err := strconv.Atoi(params.ByName("categoryId"))
-	//helper.PanicIfError(err)
-	//
-	//c.Service.Delete(r.Context(), categoryId)
-	//response := base.BaseResponse{
-	//	Code:    200,
-	//	Message: "Success Delete Category",
-	//	Succes:  true,
-	//}
-	//w.Header().Set("Content-Type", "application/json")
-	//errs := json.NewEncoder(w).Encode(response)
-	//helper.PanicIfError(errs)
 }
 
 func (c *CategoryControllerImpl) GetById(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
@@ -95,19 +85,7 @@ func (c *CategoryControllerImpl) GetById(w http.ResponseWriter, r *http.Request,
 		Data:    res,
 	}
 	helper.WriteToResponseBody(w, response)
-	//categoryId, err := strconv.Atoi(params.ByName("categoryId"))
-	//helper.PanicIfError(err)
-	//
-	//res := c.Service.GetById(r.Context(), categoryId)
-	//response := base.BaseResponse{
-	//	Code:    200,
-	//	Message: "Success Get Category By Id",
-	//	Succes:  true,
-	//	Data:    res,
-	//}
-	//w.Header().Set("Content-Type", "application/json")
-	//errs := json.NewEncoder(w).Encode(response)
-	//helper.PanicIfError(errs)
+
 }
 
 func (c *CategoryControllerImpl) GetAll(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
@@ -121,15 +99,34 @@ func (c *CategoryControllerImpl) GetAll(w http.ResponseWriter, r *http.Request, 
 
 	helper.WriteToResponseBody(w, response)
 
-	//res := c.Service.GetAll(r.Context())
-	//response := base.BaseResponse{
-	//	Code:    200,
-	//	Message: "Success Get All Category",
-	//	Succes:  true,
-	//	Data:    res,
-	//}
-	//w.Header().Set("Content-Type", "application/json")
-	//encoder := json.NewEncoder(w)
-	//errs := encoder.Encode(response)
-	//helper.PanicIfError(errs)
+}
+
+func (c *CategoryControllerImpl) GetAllByUserId(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	userId := r.Header.Get("X-User-ID")
+	res := c.Service.GetAllByUserId(r.Context(), userId)
+	response := base.BaseResponse{
+		Code:    200,
+		Message: "Success Get All Category",
+		Succes:  true,
+		Data:    res,
+	}
+
+	helper.WriteToResponseBody(w, response)
+}
+
+func (c *CategoryControllerImpl) GetByIdAndUserId(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	userId := r.Header.Get("X-User-ID")
+	categoryId := params.ByName("categoryId")
+	id, err := strconv.Atoi(categoryId)
+	helper.PanicIfError(err)
+
+	res := c.Service.GetByIdAndUserId(r.Context(), id, userId)
+	response := base.BaseResponse{
+		Code:    200,
+		Message: "Success Get All Category",
+		Succes:  true,
+		Data:    res,
+	}
+
+	helper.WriteToResponseBody(w, response)
 }
