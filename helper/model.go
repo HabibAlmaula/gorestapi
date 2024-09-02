@@ -19,3 +19,13 @@ func ToUserResponse(user domain.User) response.UserResponse {
 		Email:    user.Email,
 	}
 }
+
+func ToLoginResponse(user domain.User, accessToken string, refreshToken string) response.LoginResponse {
+	return response.LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    3600,
+		User:         ToUserResponse(user),
+	}
+}

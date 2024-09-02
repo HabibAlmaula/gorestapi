@@ -35,6 +35,19 @@ func (a AuthControllerImpl) Register(w http.ResponseWriter, r *http.Request, par
 }
 
 func (a AuthControllerImpl) Login(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	//TODO implement me
-	panic("implement me")
+	req := request.LoginRequest{}
+	helper.ReadFromRequestBody(r, &req)
+	fmt.Println("Request_controller: ", req)
+
+	res := a.Service.Login(r.Context(), req)
+
+	fmt.Println("Response_controller: ", res)
+
+	response := base.BaseResponse{
+		Code:    200,
+		Message: "Success Login",
+		Succes:  true,
+		Data:    res,
+	}
+	helper.WriteToResponseBody(w, response)
 }

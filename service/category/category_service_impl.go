@@ -3,6 +3,7 @@ package category
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/go-playground/validator/v10"
 	"learning/restapi/exception"
 	"learning/restapi/helper"
@@ -103,6 +104,7 @@ func (c *CategoryServiceImpl) GetById(ctx context.Context, id int) response.Cate
 
 func (c *CategoryServiceImpl) GetAll(ctx context.Context) []response.CategoryResponse {
 	tx, err := c.DB.Begin()
+	fmt.Println("Error_Service_1: ", err)
 	helper.PanicIfError(err)
 
 	defer helper.CommitOrRollback(tx)

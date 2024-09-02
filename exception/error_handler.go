@@ -1,6 +1,7 @@
 package exception
 
 import (
+	"fmt"
 	"github.com/go-playground/validator/v10"
 	"learning/restapi/helper"
 	"learning/restapi/model/base"
@@ -9,6 +10,10 @@ import (
 
 func ErrorHandler(writer http.ResponseWriter, request *http.Request, err interface{}) {
 	if notFoundError(writer, request, err) {
+		return
+	}
+
+	if unAuthorizedError(writer, request, err) {
 		return
 	}
 
@@ -21,6 +26,23 @@ func ErrorHandler(writer http.ResponseWriter, request *http.Request, err interfa
 	}
 
 	internalServerError(writer, request, err)
+}
+
+func unAuthorizedError(writer http.ResponseWriter, request *http.Request, err interface{}) bool {
+	dataError, ok := err.(UnAuthorizedError)
+	if !ok {
+		return false
+	} else {
+		writer.WriteHeader(http.StatusUnauthorized)
+		response := base.BaseResponse{
+			Code:    http.StatusUnauthorized,
+			Succes:  false,
+			Message: dataError.Error,
+		}
+		helper.WriteToResponseBody(writer, response)
+
+		return true
+	}
 }
 
 func dataExistError(writer http.ResponseWriter, request *http.Request, err interface{}) bool {
@@ -76,6 +98,7 @@ func notFoundError(writer http.ResponseWriter, request *http.Request, err interf
 }
 
 func internalServerError(writer http.ResponseWriter, request *http.Request, err interface{}) {
+	fmt.Println("Error: ", err)
 	writer.WriteHeader(http.StatusInternalServerError)
 	response := base.BaseResponse{
 		Code:    http.StatusInternalServerError,

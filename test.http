@@ -1,10 +1,18 @@
 ### Register
 POST http://localhost:3000/api/auth/register
 Content-Type: application/json
-X-API-Key: KEY
 
 {
   "full_name": "Habib Almaula",
+  "email": "yoga@gmail.com",
+  "password": "123456"
+}
+
+### Login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
   "email": "yoga@gmail.com",
   "password": "123456"
 }
@@ -14,7 +22,7 @@ X-API-Key: KEY
 ### GET All Categories
 GET http://localhost:3000/api/categories
 Accept: application/json
-X-API-Key: KEY
+authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjU0Nzg0ODcsImlhdCI6MTcyNTI2MjQ4Nywic3ViIjoiMGY5ZDdjZmUtNzIyZC00MDgyLWJlZWYtOWU3MzE1Y2ExNDc3In0.pa91raqtxj3kGF6aIhhMUwnhSOp6gvWOQmG07cgZUII
 
 
 

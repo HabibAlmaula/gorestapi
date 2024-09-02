@@ -8,5 +8,5 @@ import (
 
 type UserService interface {
 	Register(ctx context.Context, request request.RegisterUserRequest) response.UserResponse
-	Login(ctx context.Context, request request.LoginRequest) response.UserResponse
+	Login(ctx context.Context, request request.LoginRequest) response.LoginResponse
 }

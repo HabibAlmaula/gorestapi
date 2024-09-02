@@ -60,12 +60,12 @@ func (u *UserRepositoryImpl) GetById(ctx context.Context, tx *sql.Tx, id int) (d
 }
 
 func (u *UserRepositoryImpl) GetByEmail(ctx context.Context, tx *sql.Tx, email string) (domain.User, error) {
-	SQL := "SELECT id, full_name, email FROM users WHERE email = ?"
+	SQL := "SELECT id, full_name, email, password FROM users WHERE email = ?"
 	rows, err := tx.QueryContext(ctx, SQL, email)
 	helper.PanicIfError(err)
 	user := domain.User{}
 	if rows.Next() {
-		err = rows.Scan(&user.Id, &user.FullName, &user.Email)
+		err = rows.Scan(&user.Id, &user.FullName, &user.Email, &user.Password)
 		helper.PanicIfError(err)
 		return user, nil
 	} else {
