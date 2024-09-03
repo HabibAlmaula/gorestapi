@@ -1,113 +1,100 @@
 package category
 
 import (
-	"context"
-	"database/sql"
 	"errors"
+	"gorm.io/gorm"
 	"learning/restapi/helper"
 	"learning/restapi/model/domain"
 )
 
 type CategoryRepositoryImpl struct {
+	Conn *gorm.DB
 }
 
-func NewCategoryRepository() CategoryRepository {
-	return &CategoryRepositoryImpl{}
+func NewCategoryRepository(conn *gorm.DB) *CategoryRepositoryImpl {
+	return &CategoryRepositoryImpl{Conn: conn}
 }
 
-func (c *CategoryRepositoryImpl) Create(ctx context.Context, tx *sql.Tx, category domain.Category, user domain.User) domain.Category {
-	SQL := "INSERT INTO category (name, user_id) VALUES (?, ?)"
-	result, err := tx.ExecContext(ctx, SQL, category.Name, user.Id)
-	helper.PanicIfError(err)
-	insertId, err := result.LastInsertId()
-	helper.PanicIfError(err)
-	category.Id = int(insertId)
-	return category
-}
-
-func (c *CategoryRepositoryImpl) Update(ctx context.Context, tx *sql.Tx, category domain.Category) domain.Category {
-	SQL := "UPDATE category SET name = ? WHERE id = ?"
-	_, err := tx.ExecContext(ctx, SQL, category.Name, category.Id)
-	helper.PanicIfError(err)
-	return category
-}
-
-func (c CategoryRepositoryImpl) Delete(ctx context.Context, tx *sql.Tx, id int) {
-	SQL := "DELETE FROM category WHERE id = ?"
-	_, err := tx.ExecContext(ctx, SQL, id)
-	helper.PanicIfError(err)
-}
-
-func (c CategoryRepositoryImpl) GetById(ctx context.Context, tx *sql.Tx, id int) (domain.Category, error) {
-	SQL := "SELECT id, name FROM category WHERE id = ?"
-	rows, err := tx.QueryContext(ctx, SQL, id)
-	helper.PanicIfError(err)
-	defer rows.Close()
-	category := domain.Category{}
-	if rows.Next() {
-		err := rows.Scan(&category.Id, &category.Name)
-		helper.PanicIfError(err)
-		return category, nil
-	} else {
-		return category, errors.New("category not found")
+func (c *CategoryRepositoryImpl) Create(category *domain.Category) *domain.Category {
+	tx := c.Conn.Begin()
+	if er := tx.Create(&category).Error; er != nil {
+		tx.Rollback()
+		helper.PanicIfError(er)
 	}
+	tx.Commit()
+	return category
 }
 
-func (c CategoryRepositoryImpl) GetAll(ctx context.Context, tx *sql.Tx) []domain.Category {
-	SQL := "SELECT id, name FROM category"
-	rows, err := tx.QueryContext(ctx, SQL)
-	helper.PanicIfError(err)
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		helper.PanicIfError(err)
-	}(rows)
+func (c *CategoryRepositoryImpl) Update(category *domain.Category) (cat *domain.Category, err error) {
+	tx := c.Conn.Begin()
+	if er := tx.Model(category).Update("name", category.Name).Error; er != nil {
+		tx.Rollback()
+		if errors.Is(er, gorm.ErrRecordNotFound) {
+			return nil, errors.New("category not found")
+		} else {
+			helper.PanicIfError(er)
+		}
+	}
+	return category, nil
+}
 
-	var categories []domain.Category
-	for rows.Next() {
-		category := domain.Category{}
-		err := rows.Scan(&category.Id, &category.Name)
+func (c CategoryRepositoryImpl) Delete(id int) {
+	tx := c.Conn.Begin()
+	if er := tx.Delete(&domain.Category{}, id).Error; er != nil {
+		tx.Rollback()
+		helper.PanicIfError(er)
+	}
+	tx.Commit()
+}
+
+func (c CategoryRepositoryImpl) GetById(id int) (*domain.Category, error) {
+	tx := c.Conn.Begin()
+	category := &domain.Category{}
+	if er := tx.First(&category, id).Error; er != nil {
+		tx.Rollback()
+		if errors.Is(er, gorm.ErrRecordNotFound) {
+			return category, errors.New("category not found")
+		} else {
+
+			helper.PanicIfError(er)
+		}
+	}
+	tx.Commit()
+	return category, nil
+}
+
+func (c CategoryRepositoryImpl) GetAll() []*domain.Category {
+
+	var categories []*domain.Category
+	tx := c.Conn.Begin()
+	if err := tx.Find(&categories).Error; err != nil {
+		tx.Rollback()
 		helper.PanicIfError(err)
-		categories = append(categories, category)
 	}
 	return categories
 }
 
-func (c *CategoryRepositoryImpl) GetAllByUserId(ctx context.Context, tx *sql.Tx, userId string) []domain.Category {
-	SQL := "SELECT id, name FROM category WHERE user_id = ?"
-	rows, err := tx.QueryContext(ctx, SQL, userId)
-	helper.PanicIfError(err)
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-			helper.PanicIfError(err)
-		}
-	}(rows)
-	var categories []domain.Category
-	for rows.Next() {
-		category := domain.Category{}
-		err := rows.Scan(&category.Id, &category.Name, &category.UserId)
+func (c *CategoryRepositoryImpl) GetAllByUserId(userId string) []*domain.Category {
+	tx := c.Conn.Begin()
+	var categories []*domain.Category
+	if err := tx.Where("user_id = ?", userId).Find(&categories).Error; err != nil {
+		tx.Rollback()
 		helper.PanicIfError(err)
-		categories = append(categories, category)
 	}
 	return categories
 }
 
-func (c *CategoryRepositoryImpl) GetByIdAndUserId(ctx context.Context, tx *sql.Tx, id int, userId string) (domain.Category, error) {
-	SQL := "SELECT id, name FROM category WHERE id = ? AND user_id = ?"
-	rows, err := tx.QueryContext(ctx, SQL, id, userId)
-	helper.PanicIfError(err)
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-			helper.PanicIfError(err)
+func (c *CategoryRepositoryImpl) GetByIdAndUserId(id int, userId string) (*domain.Category, error) {
+	tx := c.Conn.Begin()
+	category := &domain.Category{}
+	if er := tx.Where("id = ? AND user_id = ?", id, userId).First(&category).Error; er != nil {
+		tx.Rollback()
+		if errors.Is(er, gorm.ErrRecordNotFound) {
+			return category, errors.New("category not found")
+		} else {
+			helper.PanicIfError(er)
 		}
-	}(rows)
-	category := domain.Category{}
-	if rows.Next() {
-		err := rows.Scan(&category.Id, &category.Name)
-		helper.PanicIfError(err)
-		return category, nil
-	} else {
-		return category, errors.New("category not found")
 	}
+	tx.Commit()
+	return category, nil
 }

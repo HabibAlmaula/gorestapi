@@ -26,7 +26,7 @@ func (c *CategoryControllerImpl) Create(w http.ResponseWriter, r *http.Request, 
 
 	userId := r.Header.Get("X-User-ID")
 
-	res := c.Service.Create(r.Context(), req, userId)
+	res := c.Service.Create(req, userId)
 	response := base.BaseResponse{
 		Code:    201,
 		Message: "Success Create Category",
@@ -45,7 +45,7 @@ func (c *CategoryControllerImpl) Update(w http.ResponseWriter, r *http.Request, 
 	id, err := strconv.Atoi(categoryId)
 	helper.PanicIfError(err)
 
-	res := c.Service.Update(r.Context(), req, id)
+	res := c.Service.Update(req, id)
 	response := base.BaseResponse{
 		Code:    200,
 		Message: "Success Update Category",
@@ -61,7 +61,7 @@ func (c *CategoryControllerImpl) Delete(w http.ResponseWriter, r *http.Request, 
 	id, err := strconv.Atoi(categoryId)
 	helper.PanicIfError(err)
 
-	c.Service.Delete(r.Context(), id)
+	c.Service.Delete(id)
 	response := base.BaseResponse{
 		Code:    200,
 		Message: "Success Delete Category",
@@ -77,7 +77,7 @@ func (c *CategoryControllerImpl) GetById(w http.ResponseWriter, r *http.Request,
 	id, err := strconv.Atoi(categoryId)
 	helper.PanicIfError(err)
 
-	res := c.Service.GetById(r.Context(), id)
+	res := c.Service.GetById(id)
 	response := base.BaseResponse{
 		Code:    200,
 		Message: "Success Get Category By Id",
@@ -103,7 +103,7 @@ func (c *CategoryControllerImpl) GetAll(w http.ResponseWriter, r *http.Request, 
 
 func (c *CategoryControllerImpl) GetAllByUserId(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	userId := r.Header.Get("X-User-ID")
-	res := c.Service.GetAllByUserId(r.Context(), userId)
+	res := c.Service.GetAllByUserId(userId)
 	response := base.BaseResponse{
 		Code:    200,
 		Message: "Success Get All Category",
@@ -120,7 +120,7 @@ func (c *CategoryControllerImpl) GetByIdAndUserId(w http.ResponseWriter, r *http
 	id, err := strconv.Atoi(categoryId)
 	helper.PanicIfError(err)
 
-	res := c.Service.GetByIdAndUserId(r.Context(), id, userId)
+	res := c.Service.GetByIdAndUserId(id, userId)
 	response := base.BaseResponse{
 		Code:    200,
 		Message: "Success Get All Category",

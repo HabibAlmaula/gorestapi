@@ -1,8 +1,13 @@
 package domain
 
+import "gorm.io/gorm"
+
 type User struct {
-	Id       string
-	FullName string
-	Email    string
-	Password string
+	gorm.Model
+	Id         string `gorm:"primaryKey;type:varchar(36)"`
+	FullName   string
+	Email      string `gorm:"unique;not null;index;type:varchar(50)"`
+	Password   string
+	Categories []Category
+	DeletedAt  gorm.DeletedAt
 }

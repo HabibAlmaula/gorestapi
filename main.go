@@ -18,12 +18,12 @@ func main() {
 	db := app.NewDB()
 
 	// Initialize user-related components
-	userRepository := user.NewUserRepository()
+	userRepository := user.NewUserRepository(db)
 	userService := user2.NewUserService(userRepository, db, validate)
 	userController := controller.NewAuthController(userService)
 
 	// Initialize category-related components
-	categoryRepository := category.NewCategoryRepository()
+	categoryRepository := category.NewCategoryRepository(db)
 	categoryService := category2.NewCategoryService(categoryRepository, db, validate)
 	categoryController := controller.NewCategoryController(categoryService)
 

@@ -1,88 +1,86 @@
 package user
 
 import (
-	"context"
-	"database/sql"
 	"errors"
-	"fmt"
-	"github.com/google/uuid"
+	"gorm.io/gorm"
 	"learning/restapi/helper"
 	"learning/restapi/model/domain"
 )
 
 type UserRepositoryImpl struct {
+	Conn *gorm.DB
 }
 
-func NewUserRepository() *UserRepositoryImpl {
-	return &UserRepositoryImpl{}
+func NewUserRepository(conn *gorm.DB) *UserRepositoryImpl {
+	return &UserRepositoryImpl{conn}
 }
 
-func (u *UserRepositoryImpl) Create(ctx context.Context, tx *sql.Tx, user domain.User) domain.User {
-	SQL := "INSERT INTO users (id, full_name, email, password) VALUES (?, ?, ?, ?)"
-	id := uuid.New()
-	fmt.Println("UUID: ", id)
-	result, err := tx.ExecContext(ctx, SQL, id, user.FullName, user.Email, user.Password)
-	//print error
-	fmt.Println("Error: ", err)
-	helper.PanicIfError(err)
-	_, err = result.LastInsertId()
-	helper.PanicIfError(err)
-	user.Id = id.String()
-	fmt.Println("User ID: ", user.Id)
+func (u *UserRepositoryImpl) Create(user *domain.User) *domain.User {
+	tx := u.Conn.Begin()
+	if err := tx.Create(&user).Error; err != nil {
+		tx.Rollback()
+		helper.PanicIfError(err)
+	}
+	tx.Commit()
 	return user
 }
 
-func (u *UserRepositoryImpl) Update(ctx context.Context, tx *sql.Tx, user domain.User) domain.User {
-	SQL := "UPDATE users SET full_name = ?, email = ? WHERE id = ?"
-	_, err := tx.ExecContext(ctx, SQL, user.FullName, user.Email, user.Id)
-	helper.PanicIfError(err)
+func (u *UserRepositoryImpl) Update(user *domain.User) *domain.User {
+	tx := u.Conn.Begin()
+	if err := tx.Save(&user).Error; err != nil {
+		tx.Rollback()
+		helper.PanicIfError(err)
+	}
+	tx.Commit()
 	return user
 }
 
-func (u *UserRepositoryImpl) Delete(ctx context.Context, tx *sql.Tx, id int) {
-	SQL := "DELETE FROM users WHERE id = ?"
-	_, err := tx.ExecContext(ctx, SQL, id)
-	helper.PanicIfError(err)
+func (u *UserRepositoryImpl) Delete(id int) {
+	tx := u.Conn.Begin()
+	if err := tx.Delete(&domain.User{}, id).Error; err != nil {
+		tx.Rollback()
+		helper.PanicIfError(err)
+	}
+	tx.Commit()
 }
 
-func (u *UserRepositoryImpl) GetById(ctx context.Context, tx *sql.Tx, id int) (domain.User, error) {
-	SQL := "SELECT id, full_name, email FROM users WHERE id = ?"
-	rows, err := tx.QueryContext(ctx, SQL, id)
-	helper.PanicIfError(err)
-	user := domain.User{}
-	if rows.Next() {
-		err = rows.Scan(&user.Id, &user.FullName, &user.Email)
-		helper.PanicIfError(err)
-		return user, nil
-	} else {
-		return user, errors.New("user not found")
+func (u *UserRepositoryImpl) GetById(id int) (*domain.User, error) {
+	tx := u.Conn.Begin()
+	user := &domain.User{}
+	if err := tx.First(&user, id).Error; err != nil {
+		tx.Rollback()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return user, errors.New("user not found")
+		} else {
+			helper.PanicIfError(err)
+		}
 	}
+	tx.Commit()
+	return user, nil
 }
 
-func (u *UserRepositoryImpl) GetByEmail(ctx context.Context, tx *sql.Tx, email string) (domain.User, error) {
-	SQL := "SELECT id, full_name, email, password FROM users WHERE email = ?"
-	rows, err := tx.QueryContext(ctx, SQL, email)
-	helper.PanicIfError(err)
-	user := domain.User{}
-	if rows.Next() {
-		err = rows.Scan(&user.Id, &user.FullName, &user.Email, &user.Password)
-		helper.PanicIfError(err)
-		return user, nil
-	} else {
-		return user, errors.New("user not found")
+func (u *UserRepositoryImpl) GetByEmail(email string) (*domain.User, error) {
+	tx := u.Conn.Begin()
+	user := &domain.User{}
+	if err := tx.Find(&user, "email = ?", email).Error; err != nil {
+		tx.Rollback()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return user, errors.New("user not found")
+		} else {
+			helper.PanicIfError(err)
+		}
 	}
+	tx.Commit()
+	return user, nil
 }
 
-func (u *UserRepositoryImpl) GetAll(ctx context.Context, tx *sql.Tx) []domain.User {
-	SQL := "SELECT id, full_name, email FROM users"
-	rows, err := tx.QueryContext(ctx, SQL)
-	helper.PanicIfError(err)
-	var users []domain.User
-	for rows.Next() {
-		user := domain.User{}
-		err = rows.Scan(&user.Id, &user.FullName, &user.Email)
+func (u *UserRepositoryImpl) GetAll() []*domain.User {
+	tx := u.Conn.Begin()
+	var users []*domain.User
+	if err := tx.Find(&users).Error; err != nil {
+		tx.Rollback()
 		helper.PanicIfError(err)
-		users = append(users, user)
 	}
+	tx.Commit()
 	return users
 }

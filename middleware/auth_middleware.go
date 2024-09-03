@@ -84,6 +84,7 @@ import (
 	"learning/restapi/model/base"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type JwtClaims struct {
@@ -133,6 +134,25 @@ func (middleware *AuthMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Reque
 			Code:    http.StatusUnauthorized,
 			Succes:  false,
 			Message: "Unauthorized",
+		}
+		helper.WriteToResponseBody(w, response)
+		return
+	}
+
+	claims := token.Claims.(*JwtClaims)
+
+	// convert expired time to Date
+	expiredTime := time.Unix(claims.ExpiresAt, 0)
+	fmt.Println("Expired Time", expiredTime)
+
+	// Check if the token has expired
+	if claims.ExpiresAt < time.Now().Unix() {
+		fmt.Println("Token has expired")
+		w.WriteHeader(http.StatusUnauthorized)
+		response := base.BaseResponse{
+			Code:    http.StatusUnauthorized,
+			Succes:  false,
+			Message: "Token has expired",
 		}
 		helper.WriteToResponseBody(w, response)
 		return
