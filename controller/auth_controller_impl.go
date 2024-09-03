@@ -24,7 +24,7 @@ func (a AuthControllerImpl) Register(w http.ResponseWriter, r *http.Request, par
 
 	fmt.Println("Request_controller: ", req)
 
-	res := a.Service.Register(r.Context(), req)
+	res := a.Service.Register(req)
 	response := base.BaseResponse{
 		Code:    201,
 		Message: "Success Register User",
@@ -39,7 +39,7 @@ func (a AuthControllerImpl) Login(w http.ResponseWriter, r *http.Request, params
 	helper.ReadFromRequestBody(r, &req)
 	fmt.Println("Request_controller: ", req)
 
-	res := a.Service.Login(r.Context(), req)
+	res := a.Service.Login(req)
 
 	fmt.Println("Response_controller: ", res)
 

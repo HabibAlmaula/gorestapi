@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"fmt"
 	"github.com/golang-jwt/jwt"
 	"learning/restapi/configs"
 	"learning/restapi/model/domain"
@@ -11,13 +12,15 @@ import (
 
 var configJWT = configs.Config.JWT
 
-func GenerateAccessTokenJWT(user *domain.User) (string, error) {
+func GenerateAccessTokenJWT(user *domain.User) (string, int64, error) {
 	// Define the claims for the JWT token
+	expTime := time.Now().Add(time.Hour * configJWT.TTLAccess).Unix()
 	claims := jwt.MapClaims{
-		"sub": user.Id,                                                // Subject
-		"iat": time.Now().Unix(),                                      // Issued At
-		"exp": time.Now().Add(time.Hour * configJWT.TTLAccess).Unix(), // Expiration time (2 hours)
+		"sub": user.Id,           // Subject
+		"iat": time.Now().Unix(), // Issued At
+		"exp": expTime,           // Expiration time (2 hours)
 	}
+	fmt.Println("exp: ", expTime)
 
 	// Create a new token with claims
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -25,18 +28,20 @@ func GenerateAccessTokenJWT(user *domain.User) (string, error) {
 	// Sign the token with the secret key
 	tokenString, err := token.SignedString([]byte(configJWT.SecretAccess))
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 
-	return tokenString, nil
+	return tokenString, expTime, nil
 }
 
-func GenerateRefreshTokenJWT(user *domain.User) (string, error) {
+func GenerateRefreshTokenJWT(user *domain.User) (string, int64, error) {
 	// Define the claims for the JWT token
+	expTime := time.Now().Add(time.Hour * configJWT.TTLAccess).Unix()
+
 	claims := jwt.MapClaims{
-		"sub": user.Id,                                                 // Subject
-		"iat": time.Now().Unix(),                                       // Issued At
-		"exp": time.Now().Add(time.Hour * configJWT.TTLRefresh).Unix(), // Expiration time (2 hours)
+		"sub": user.Id,           // Subject
+		"iat": time.Now().Unix(), // Issued At
+		"exp": expTime,           // Expiration time (2 hours)
 	}
 
 	// Create a new token with claims
@@ -45,10 +50,10 @@ func GenerateRefreshTokenJWT(user *domain.User) (string, error) {
 	// Sign the token with the secret key
 	tokenString, err := token.SignedString([]byte(configJWT.SecretRefresh))
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 
-	return tokenString, nil
+	return tokenString, expTime, nil
 }
 
 func GetUserID(r *http.Request) (int32, error) {

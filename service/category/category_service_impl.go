@@ -2,8 +2,8 @@ package category
 
 import (
 	"context"
-	"database/sql"
 	"github.com/go-playground/validator/v10"
+	"gorm.io/gorm"
 	"learning/restapi/exception"
 	"learning/restapi/helper"
 	"learning/restapi/model/domain"
@@ -14,11 +14,11 @@ import (
 
 type CategoryServiceImpl struct {
 	CategoryRepository category.CategoryRepository
-	DB                 *sql.DB
+	DB                 *gorm.DB
 	Validate           *validator.Validate
 }
 
-func NewCategoryService(categoryRepository category.CategoryRepository, db *sql.DB, validate *validator.Validate) CategoryService {
+func NewCategoryService(categoryRepository category.CategoryRepository, db *gorm.DB, validate *validator.Validate) CategoryService {
 	return &CategoryServiceImpl{
 		CategoryRepository: categoryRepository,
 		DB:                 db,
@@ -27,42 +27,29 @@ func NewCategoryService(categoryRepository category.CategoryRepository, db *sql.
 
 }
 
-func (c *CategoryServiceImpl) Create(ctx context.Context, request request.CategoryCreateRequest, userId string) response.CategoryResponse {
+func (c *CategoryServiceImpl) Create(request request.CategoryCreateRequest, userId string) response.CategoryResponse {
 	// Validate request
 	err := c.Validate.Struct(request)
 	helper.PanicIfError(err)
 
-	tx, err := c.DB.Begin()
-	helper.PanicIfError(err)
-
-	defer helper.CommitOrRollback(tx)
-
-	category := domain.Category{
-		Name: request.Name,
+	category := &domain.Category{
+		Name:   request.Name,
+		UserId: userId,
 	}
 
-	user := domain.User{
-		Id: userId,
-	}
-
-	category = c.CategoryRepository.Create(ctx, tx, category, user)
+	category = c.CategoryRepository.Create(category)
 
 	return helper.ToCategoryResponse(category)
 
 }
 
-func (c *CategoryServiceImpl) Update(ctx context.Context, updateRequest request.CategoryUpdateRequest, id int) response.CategoryResponse {
+func (c *CategoryServiceImpl) Update(updateRequest request.CategoryUpdateRequest, id int) response.CategoryResponse {
 	// Validate request
 	err := c.Validate.Struct(updateRequest)
 	helper.PanicIfError(err)
 
-	tx, err := c.DB.Begin()
-	helper.PanicIfError(err)
-
-	defer helper.CommitOrRollback(tx)
-
 	// Get category by id
-	category, err := c.CategoryRepository.GetById(ctx, tx, id)
+	category, err := c.CategoryRepository.GetById(id)
 	if err != nil {
 		panic(exception.NewNotFoundError(err.Error()))
 	}
@@ -71,34 +58,27 @@ func (c *CategoryServiceImpl) Update(ctx context.Context, updateRequest request.
 	category.Name = updateRequest.Name
 
 	// Save to database
-	category = c.CategoryRepository.Update(ctx, tx, category)
+	category, err = c.CategoryRepository.Update(category)
+	if err != nil {
+		helper.PanicIfError(err)
+	}
 
 	return helper.ToCategoryResponse(category)
 }
 
-func (c *CategoryServiceImpl) Delete(ctx context.Context, id int) {
-	tx, err := c.DB.Begin()
-	helper.PanicIfError(err)
-
-	defer helper.CommitOrRollback(tx)
-
+func (c *CategoryServiceImpl) Delete(id int) {
 	// Get category by id
-	category, err := c.CategoryRepository.GetById(ctx, tx, id)
+	category, err := c.CategoryRepository.GetById(id)
 	if err != nil {
 		panic(exception.NewNotFoundError(err.Error()))
 	}
 	// Delete category
-	c.CategoryRepository.Delete(ctx, tx, category.Id)
+	c.CategoryRepository.Delete(category.Id)
 }
 
-func (c *CategoryServiceImpl) GetById(ctx context.Context, id int) response.CategoryResponse {
-	tx, err := c.DB.Begin()
-	helper.PanicIfError(err)
-
-	defer helper.CommitOrRollback(tx)
-
+func (c *CategoryServiceImpl) GetById(id int) response.CategoryResponse {
 	// Get category by id
-	category, err := c.CategoryRepository.GetById(ctx, tx, id)
+	category, err := c.CategoryRepository.GetById(id)
 	if err != nil {
 		panic(exception.NewNotFoundError(err.Error()))
 	}
@@ -106,12 +86,8 @@ func (c *CategoryServiceImpl) GetById(ctx context.Context, id int) response.Cate
 }
 
 func (c *CategoryServiceImpl) GetAll(ctx context.Context) []response.CategoryResponse {
-	tx, err := c.DB.Begin()
-	helper.PanicIfError(err)
 
-	defer helper.CommitOrRollback(tx)
-
-	categories := c.CategoryRepository.GetAll(ctx, tx)
+	categories := c.CategoryRepository.GetAll()
 
 	var categoryResponses []response.CategoryResponse
 	for _, category := range categories {
@@ -121,13 +97,9 @@ func (c *CategoryServiceImpl) GetAll(ctx context.Context) []response.CategoryRes
 	return categoryResponses
 }
 
-func (c *CategoryServiceImpl) GetAllByUserId(ctx context.Context, userId string) []response.CategoryResponse {
-	tx, err := c.DB.Begin()
-	helper.PanicIfError(err)
+func (c *CategoryServiceImpl) GetAllByUserId(userId string) []response.CategoryResponse {
 
-	defer helper.CommitOrRollback(tx)
-
-	categories := c.CategoryRepository.GetAllByUserId(ctx, tx, userId)
+	categories := c.CategoryRepository.GetAllByUserId(userId)
 
 	var categoryResponses []response.CategoryResponse
 	for _, category := range categories {
@@ -137,14 +109,10 @@ func (c *CategoryServiceImpl) GetAllByUserId(ctx context.Context, userId string)
 	return categoryResponses
 }
 
-func (c *CategoryServiceImpl) GetByIdAndUserId(ctx context.Context, id int, userId string) response.CategoryResponse {
-	tx, err := c.DB.Begin()
-	helper.PanicIfError(err)
-
-	defer helper.CommitOrRollback(tx)
+func (c *CategoryServiceImpl) GetByIdAndUserId(id int, userId string) response.CategoryResponse {
 
 	// Get category by id and user id
-	category, err := c.CategoryRepository.GetByIdAndUserId(ctx, tx, id, userId)
+	category, err := c.CategoryRepository.GetByIdAndUserId(id, userId)
 	if err != nil {
 		panic(exception.NewNotFoundError(err.Error()))
 	}

@@ -7,11 +7,11 @@ import (
 )
 
 type CategoryService interface {
-	Create(ctx context.Context, request request.CategoryCreateRequest, userId string) response.CategoryResponse
-	Update(ctx context.Context, updateRequest request.CategoryUpdateRequest, id int) response.CategoryResponse
-	Delete(ctx context.Context, id int)
-	GetById(ctx context.Context, id int) response.CategoryResponse
+	Create(request request.CategoryCreateRequest, userId string) response.CategoryResponse
+	Update(updateRequest request.CategoryUpdateRequest, id int) response.CategoryResponse
+	Delete(id int)
+	GetById(id int) response.CategoryResponse
 	GetAll(ctx context.Context) []response.CategoryResponse
-	GetAllByUserId(ctx context.Context, userId string) []response.CategoryResponse
-	GetByIdAndUserId(ctx context.Context, id int, userId string) response.CategoryResponse
+	GetAllByUserId(userId string) []response.CategoryResponse
+	GetByIdAndUserId(id int, userId string) response.CategoryResponse
 }
